@@ -12,6 +12,7 @@ import { useThreeDStore } from '../stores/threeDStore';
 import { useThemeStore } from '../stores/themeStore';
 import { Canvas } from '@react-three/fiber';
 import GlobalKeyHandler from '../components/gui/GlobalKeyhandler';
+import Chat from '../components/Chat';
 
 // Dynamic imports with SSR disabled
 const StartOverlay = dynamic(() => import('../components/gui/StartOverlay'), {
@@ -110,6 +111,9 @@ const IndexPage: React.FC<{ inputRef: React.RefObject<HTMLInputElement> }> = ({
                   setLastCommandIndex={setLastCommandIndex}
                   clearHistory={clearHistory}
                 />
+                <div className="mt-4">
+                  <Chat />
+                </div>
               </div>
             </div>
           )}
