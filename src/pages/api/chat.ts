@@ -231,116 +231,34 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ message: 'Method not allowed' })
   }
 
   try {
-    console.log('Received request body:', req.body);
-    const { messages } = req.body;
+    const { messages } = req.body
+    
+    const groq = new GroqChat({
+      apiKey: process.env.GROQ_API_KEY
+    })
 
-    if (!process.env.GROQ_API_KEY) {
-      throw new Error('GROQ_API_KEY is not set');
-    }
+    const response = await groq.chat.completions.create({
+      messages: messages,
+      model: 'llama3-small',
+      stream: true
+    })
 
-    // Make the API call
-    const completion = await groq.chat.completions.create({
-      model: 'llama3-groq-70b-8192-tool-use-preview',
-      messages: [systemMessage, ...messages],
-      tools,
-      tool_choice: 'auto',
-      temperature: 0.4,
-      max_tokens: 512,
-      stream: false,
-    });
-
-    console.log('Groq API Response:', completion); // Add this for debugging
-
-    // Check if we have a valid response
-    if (!completion?.choices?.[0]?.message) {
-      throw new Error('Invalid response from Groq API');
-    }
-
-    const responseMessage = completion.choices[0].message;
-    let text = '';
-    let toolActionResult: ToolActionResult | null = null;
-
-    // Process tool calls if present
-    if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-      const toolCall = responseMessage.tool_calls[0];
-
-      try {
-        switch (toolCall.function.name) {
-          case 'playMusic': {
-            const args = JSON.parse(
-              toolCall.function.arguments,
-            ) as MusicToolParams;
-            const musicConfig = skullMusic[args.songId] as MusicSkullResponse;
-            if (!musicConfig || !isMusicResponse(musicConfig)) {
-              throw new Error(`Invalid songId: ${args.songId}`);
-            }
-
-            // Use the text from musicConfig
-            text = musicConfig.text;
-            toolActionResult = {
-              type: 'music',
-              config: {
-                introText: musicConfig.text,
-                introAudio: `/media/skull_speech/${musicConfig.audio}`,
-                songUrl: `/media/skull_music/${musicConfig.musicConfig.song}`,
-                visualizer: {
-                  mode: musicConfig.musicConfig.visualizerSetting,
-                  preset: musicConfig.musicConfig.visualizerPreset,
-                  thresholds: musicConfig.musicConfig.visualizerThresholds,
-                  shaderEnabled: true,
-                  useThemeColors: true,
-                },
-              },
-            };
-            break;
-          }
-          case 'useResponse': {
-            const args = JSON.parse(
-              toolCall.function.arguments,
-            ) as ResponseToolParams;
-            const response = skullResponses[
-              args.responseId
-            ] as ResponseSkullResponse;
-            if (!response || response.type !== 'response') {
-              throw new Error(`Invalid responseId: ${args.responseId}`);
-            }
-
-            // Use the text from response
-            text = response.text;
-            toolActionResult = {
-              type: 'response',
-              config: {
-                introText: response.text,
-                introAudio: `/media/skull_speech/${response.audio}`,
-              },
-            };
-            break;
-          }
+    const stream = new ReadableStream({
+      async start(controller) {
+        for await (const chunk of response) {
+          controller.enqueue(chunk.choices[0]?.delta?.content || '')
         }
-      } catch (error) {
-        console.error('Error processing tool call:', error);
-        throw error;
+        controller.close()
       }
-    } else {
-      // Only use the LLM's response content if there was no tool call
-      text = responseMessage.content || 'Very well, mortal...';
-    }
+    })
 
-    // Always send a response with the appropriate text
-    res.status(200).json({
-      content: text,
-      toolAction: toolActionResult,
-    });
+    return new StreamingTextResponse(stream)
   } catch (error) {
-    console.error('Detailed error in chat API:', error);
-    res.status(500).json({
-      error: 'An error occurred',
-      details: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-    });
+    console.error('Error in chat API:', error)
+    return res.status(500).json({ error: 'Internal Server Error' })
   }
 }
