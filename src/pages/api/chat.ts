@@ -18,7 +18,7 @@ export default async function handler(req, res) {
 
     const response = await groq.chat.completions.create({
       messages: messages,
-      model: 'llama3-small',
+      model: 'mixtral-8x7b-32768',
       stream: true
     })
 
