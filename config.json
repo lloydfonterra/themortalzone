@@ -1,0 +1,52 @@
+{
+  "readmeUrl": "https://raw.githubusercontent.com/",
+  "title": "mortalzone.org",
+  "name": "mortalzone",
+  "ascii": "skull1",
+  "currentTheme": "grayscale",
+  "social": {
+    "github": "mortalzone",
+    "huggingface": "mortalzone",
+    "instagram": "mortalzone",
+    "soundcloud": "mortalzone",
+    "reddit": "mortalzone",
+    "medium": "mortalzone",
+    "kofi": "mortalzone",
+    "patreon": "mortalzone"
+  },
+  "email": "collinchattom@gmail.com",
+  "ps1_hostname": "mortal",
+  "ps1_username": "guest",
+  "site_urls": {
+    "repo": "https://github.com/",
+    "blog": "https://blog.mortalzone.org",
+    "art": "https://art.mortalzone.org",
+    "music": "https://music.mortalzone.org",
+    "writing": "https://writing.mortalzone.org",
+    "files": "https://files.mortalzone.org",
+    "type": "https://type.mortalzone.org",
+    "chat": "https://chat.mortalzone.org",
+    "links": "https://links.mortalzone.org",
+    "resume": "https://resume.mortalzone.org"
+  },
+  "colors": {
+    "light": {
+      "background": "#BEBEBE",
+      "foreground": "#000000",
+      "yellow": "#A1A1A1",
+      "green": "#6A6A6A",
+      "gray": "#868686",
+      "blue": "#4E4E4E",
+      "red": "#282828"
+    },
+    "dark": {
+      "background": "#000000",
+      "foreground": "#C1C1C1",
+      "yellow": "#C4C4C4",
+      "green": "#7D7D7D",
+      "gray": "#6E6E6E",
+      "blue": "#4D4D4D",
+      "red": "#363636"
+    }
+  }
+}
